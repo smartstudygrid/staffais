@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alrowad International School</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; width: 100%; border-top: 5px solid #1a73e8; }
+        h1 { margin: 0 0 5px 0; color: #202124; font-size: 24px; }
+        p.subtitle { margin: 0 0 25px 0; color: #5f6368; font-size: 16px; font-weight: 500; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #3c4043; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #1a73e8; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; }
+        button:hover { background-color: #1557b0; }
+        #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h1>Alrowad International School</h1>
+    <p class="subtitle">AIS English Dept.</p>
+    
+    <form id="aisForm" action="https://script.google.com/macros/s/AKfycbxMkyLvYdO3YiI5J2KlhXvMOnJdQO-p2mdBUs65aXqXIPJ3JUqKss7Jxl9rqcdigaoilw/exec" method="POST">
+        <div class="input-group">
+            <label for="enumber">Enumber</label>
+            <input type="text" id="enumber" name="enumber" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="email">Official School Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="whatsapp">WhatsApp Number</label>
+            <input type="tel" id="whatsapp" name="whatsapp" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="grades">Grade(s) Teaching</label>
+            <select id="grades" name="grades" required>
+                <option value="" disabled selected>Select a grade</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12</option>
+                <option value="Not sure yet">Not sure yet</option>
+            </select>
+        </div>
+        
+        <button type="submit" id="submitBtn">Submit</button>
+    </form>
+    
+    <div id="statusMessage"></div>
+</div>
+
+<script>
+    const form = document.getElementById('aisForm');
+    const statusMsg = document.getElementById('statusMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevents page reload
+        
+        submitBtn.disabled = true;
+        statusMsg.style.color = '#5f6368';
+        statusMsg.innerText = "Submitting response...";
+
+        const formData = new FormData(form);
+        const url = form.action;
+
+        // Use fetch to send the data via POST without refreshing the webpage
+        fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams(formData) // Formats payload for Apps Script
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.result === "success") {
+                statusMsg.style.color = '#0f9d58';
+                statusMsg.innerText = "Form submitted successfully!";
+                form.reset();
+            } else {
+                throw new Error(data.error);
+            }
+        })
+        .catch(error => {
+            statusMsg.style.color = '#d93025';
+            statusMsg.innerText = "An error occurred. Please try again.";
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
