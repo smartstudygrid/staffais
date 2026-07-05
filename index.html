@@ -10,7 +10,8 @@
         h1 { margin: 0 0 5px 0; color: #202124; font-size: 24px; }
         p.subtitle { margin: 0 0 25px 0; color: #5f6368; font-size: 16px; font-weight: 500; }
         .input-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #3c4043; font-size: 14px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; color: #3c4043; font-size: 14px; }
+        .hint { font-size: 11px; color: #80868b; margin-bottom: 6px; display: block; font-weight: normal; }
         input, select { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
         input:focus, select:focus { outline: none; border-color: #1a73e8; }
         button { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; }
@@ -25,24 +26,32 @@
     <p class="subtitle">AIS English Dept.</p>
     
     <form id="aisForm" action="https://script.google.com/macros/s/AKfycbxMkyLvYdO3YiI5J2KlhXvMOnJdQO-p2mdBUs65aXqXIPJ3JUqKss7Jxl9rqcdigaoilw/exec" method="POST">
+        
         <div class="input-group">
             <label for="enumber">Enumber</label>
-            <input type="text" id="enumber" name="enumber" required>
+            <span class="hint">Format: 'E' followed by numbers</span>
+            <input type="text" id="enumber" name="enumber" placeholder="E20000" required 
+                   pattern="^[eE]\d+$" title="Enumber must start with 'E' or 'e' followed by numbers.">
         </div>
         
         <div class="input-group">
             <label for="fullName">Full Name</label>
-            <input type="text" id="fullName" name="fullName" required>
+            <span class="hint">Format: First and Last name only (letters only)</span>
+            <input type="text" id="fullName" name="fullName" placeholder="John Doe" required 
+                   pattern="^[A-Za-z\s]+$" title="Name must only contain letters and spaces.">
         </div>
         
         <div class="input-group">
             <label for="email">Official School Email</label>
-            <input type="email" id="email" name="email" required>
+            <span class="hint">Format: school email address</span>
+            <input type="email" id="email" name="email" placeholder="john@ais.sch.sa" required>
         </div>
         
         <div class="input-group">
             <label for="whatsapp">WhatsApp Number</label>
-            <input type="tel" id="whatsapp" name="whatsapp" required>
+            <span class="hint">Format: numbers only (e.g., 966500000000)</span>
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="966500000000" required 
+                   pattern="^[0-9+\s]+$" title="Please enter a valid phone number (digits only).">
         </div>
         
         <div class="input-group">
@@ -74,7 +83,17 @@
     const submitBtn = document.getElementById('submitBtn');
 
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevents page reload
+        e.preventDefault(); 
+        
+        // Custom JavaScript validation for two-word Full Name restriction
+        const nameInput = document.getElementById('fullName').value.trim();
+        const wordCount = nameInput.split(/\s+/);
+        
+        if (wordCount.length !== 2) {
+            statusMsg.style.color = '#d93025';
+            statusMsg.innerText = "Please enter exactly two words (First Name and Last Name).";
+            return;
+        }
         
         submitBtn.disabled = true;
         statusMsg.style.color = '#5f6368';
@@ -83,10 +102,9 @@
         const formData = new FormData(form);
         const url = form.action;
 
-        // Use fetch to send the data via POST without refreshing the webpage
         fetch(url, {
             method: 'POST',
-            body: new URLSearchParams(formData) // Formats payload for Apps Script
+            body: new URLSearchParams(formData)
         })
         .then(response => response.json())
         .then(data => {
