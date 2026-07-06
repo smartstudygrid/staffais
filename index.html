@@ -243,7 +243,59 @@
   }
   @keyframes draw { to { stroke-dashoffset: 0; } }
 
-  footer.foot-note {
+  .success-view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 34px 10px 8px;
+  }
+
+  .success-view .big-tick {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 16px;
+  }
+
+  .success-view .big-tick path {
+    stroke: var(--ok);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    animation: draw 0.45s ease forwards 0.1s;
+  }
+
+  .success-view h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+    margin: 0 0 26px 0;
+  }
+
+  .reset-btn {
+    background-color: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 12px 24px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    width: 100%;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .reset-btn:hover {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
     font-family: 'Inter', sans-serif;
     font-size: 11px;
     color: #B3AC98;
@@ -268,6 +320,7 @@
   </div>
 
   <div class="form-container">
+    <div id="formView">
     <p class="intro-note">Please complete every field below — all fields marked <b>*</b> are required before submission.</p>
 
     <form id="aisForm" action="https://script.google.com/macros/s/AKfycbxMkyLvYdO3YiI5J2KlhXvMOnJdQO-p2mdBUs65aXqXIPJ3JUqKss7Jxl9rqcdigaoilw/exec" method="POST">
@@ -322,6 +375,13 @@
     </form>
 
     <div id="statusMessage"></div>
+    </div>
+
+    <div class="success-view" id="successView">
+      <svg class="big-tick" viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 6"/></svg>
+      <h2>Data Submitted Successfully</h2>
+      <button type="button" class="reset-btn" id="resetBtn">Reset Form</button>
+    </div>
   </div>
 
   <footer class="foot-note">Alrowad International School — English Department Records</footer>
@@ -331,6 +391,9 @@
     const form = document.getElementById('aisForm');
     const statusMsg = document.getElementById('statusMessage');
     const submitBtn = document.getElementById('submitBtn');
+    const formView = document.getElementById('formView');
+    const successView = document.getElementById('successView');
+    const resetBtn = document.getElementById('resetBtn');
 
     const tickSVG = '<svg class="tick" viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 6"/></svg>';
 
@@ -367,9 +430,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.result === "success") {
-                statusMsg.className = 'status-ok';
-                statusMsg.innerHTML = tickSVG + " Submitted successfully!";
                 form.reset();
+                statusMsg.className = '';
+                statusMsg.innerText = '';
+                formView.style.display = 'none';
+                successView.style.display = 'flex';
             } else {
                 throw new Error(data.error);
             }
@@ -382,6 +447,11 @@
         .finally(() => {
             submitBtn.disabled = false;
         });
+    });
+
+    resetBtn.addEventListener('click', function() {
+        successView.style.display = 'none';
+        formView.style.display = 'block';
     });
 </script>
 
