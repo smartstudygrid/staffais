@@ -74,6 +74,17 @@
     letter-spacing: 0.02em;
   }
 
+  p.domain-note {
+    font-family: 'Inter', sans-serif;
+    margin: 8px 0 0 0;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  p.domain-note strong { font-weight: 600; }
+
   .form-container {
     background: #fff;
     padding: 38px 36px 34px;
@@ -178,6 +189,30 @@
   select:invalid { color: #9A9280; }
   select option { color: var(--ink); }
 
+  .hint.hint-strong {
+    color: var(--red);
+    font-weight: 600;
+  }
+
+  .field-error {
+    display: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 500;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  input.invalid, select.invalid {
+    border-bottom-color: var(--red) !important;
+    background-color: rgba(156,43,43,0.05);
+  }
+
+  .grade-grid.invalid .grade-chip span {
+    border-color: var(--red-soft);
+  }
+
   input::placeholder { color: #C7BFA8; }
 
   input:focus, select:focus {
@@ -187,6 +222,59 @@
 
   input:user-invalid, select:user-invalid {
     border-bottom-color: var(--red-soft);
+  }
+
+  .grade-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .grade-chip input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .grade-chip span {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    border: 1.3px solid #D9D2BE;
+    border-radius: 3px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+  }
+
+  .grade-chip input:checked + span {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .grade-chip input:focus-visible + span {
+    outline: 2px solid var(--red-soft);
+    outline-offset: 1px;
+  }
+
+  .grade-chip:hover span {
+    border-color: var(--red-soft);
+  }
+
+  #gradeError {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: var(--red);
+    font-weight: 500;
+    margin-top: 8px;
+    display: none;
   }
 
   button {
@@ -296,6 +384,8 @@
     background-color: var(--ink);
     color: var(--paper);
   }
+
+  footer.foot-note {
     font-family: 'Inter', sans-serif;
     font-size: 11px;
     color: #B3AC98;
@@ -317,57 +407,65 @@
     <div class="crest">Faculty Onboarding</div>
     <h1>Alrowad International School</h1>
     <p class="subtitle">English Department · Riyadh</p>
+    <p class="domain-note">Only official <strong>@ais.sch.sa</strong> email addresses will be accepted.</p>
   </div>
 
   <div class="form-container">
     <div id="formView">
     <p class="intro-note">Please complete every field below — all fields marked <b>*</b> are required before submission.</p>
 
-    <form id="aisForm" action="https://script.google.com/macros/s/AKfycbxMkyLvYdO3YiI5J2KlhXvMOnJdQO-p2mdBUs65aXqXIPJ3JUqKss7Jxl9rqcdigaoilw/exec" method="POST">
+    <form id="aisForm" action="https://script.google.com/macros/s/AKfycbxMkyLvYdO3YiI5J2KlhXvMOnJdQO-p2mdBUs65aXqXIPJ3JUqKss7Jxl9rqcdigaoilw/exec" method="POST" novalidate>
       <div class="form-fields">
 
         <div class="input-group">
             <label for="enumber">Enumber <span class="req">*</span></label>
             <span class="hint">Format: 'E' followed by numbers</span>
-            <input type="text" id="enumber" name="enumber" placeholder="E20000" required
-                   pattern="^[eE]\d+$" title="Enumber must start with 'E' or 'e' followed by numbers.">
+            <input type="text" id="enumber" name="enumber" placeholder="E20000">
+            <span class="field-error" id="enumberError">Enter an Enumber starting with 'E' followed by numbers, e.g. E20000.</span>
         </div>
 
         <div class="input-group">
             <label for="fullName">Full Name <span class="req">*</span></label>
             <span class="hint">First and last name only, letters only</span>
-            <input type="text" id="fullName" name="fullName" placeholder="John Doe" required
-                   pattern="^[A-Za-z\s]+$" title="Name must only contain letters and spaces.">
+            <input type="text" id="fullName" name="fullName" placeholder="John Doe">
+            <span class="field-error" id="fullNameError">Enter your first and last name using letters only.</span>
         </div>
 
         <div class="input-group full">
             <label for="email">Official School Email <span class="req">*</span></label>
-            <span class="hint">Your AIS email address</span>
-            <input type="email" id="email" name="email" placeholder="john@ais.sch.sa" required>
+            <span class="hint hint-strong">Must be your official @ais.sch.sa address</span>
+            <input type="email" id="email" name="email" placeholder="john@ais.sch.sa">
+            <span class="field-error" id="emailError">Enter a valid official @ais.sch.sa email address.</span>
         </div>
 
-        <div class="input-group">
+        <div class="input-group full">
             <label for="whatsapp">WhatsApp Number <span class="req">*</span></label>
             <span class="hint">Numbers only, with country code</span>
-            <input type="tel" id="whatsapp" name="whatsapp" placeholder="966500000000" required
-                   pattern="^[0-9+\s]+$" title="Please enter a valid phone number (digits only).">
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="966500000000">
+            <span class="field-error" id="whatsappError">Enter a valid WhatsApp number using digits only.</span>
         </div>
 
-        <div class="input-group">
-            <label for="grades">Grade(s) Teaching <span class="req">*</span></label>
-            <select id="grades" name="grades" required>
-                <option value="" disabled selected>Select a grade</option>
-                <option value="4">Grade 4</option>
-                <option value="5">Grade 5</option>
-                <option value="6">Grade 6</option>
-                <option value="7">Grade 7</option>
-                <option value="8">Grade 8</option>
-                <option value="9">Grade 9</option>
-                <option value="10">Grade 10</option>
-                <option value="11">Grade 11</option>
-                <option value="12">Grade 12</option>
-                <option value="Not sure yet">Not sure yet</option>
-            </select>
+        <div class="input-group full">
+            <label>Grade(s) Teaching <span class="req">*</span></label>
+            <span class="hint">Select all that apply</span>
+            <div class="grade-grid" id="gradeGrid">
+                <label class="grade-chip"><input type="checkbox" value="Grade 4"><span>Grade 4</span></label>
+                <label class="grade-chip"><input type="checkbox" value="Grade 5"><span>Grade 5</span></label>
+                <label class="grade-chip"><input type="checkbox" value="Grade 6"><span>Grade 6</span></label>
+                <label class="grade-chip"><input type="checkbox" value="Grade 7"><span>Grade 7</span></label>
+                <label class="grade-chip"><input type="checkbox" value="Grade 8"><span>Grade 8</span></label>
+                <label class="grade-chip"><input type="checkbox" value="9IG"><span>9IG</span></label>
+                <label class="grade-chip"><input type="checkbox" value="9SAT"><span>9SAT</span></label>
+                <label class="grade-chip"><input type="checkbox" value="10IG"><span>10IG</span></label>
+                <label class="grade-chip"><input type="checkbox" value="10SAT"><span>10SAT</span></label>
+                <label class="grade-chip"><input type="checkbox" value="11SAT"><span>11SAT</span></label>
+                <label class="grade-chip"><input type="checkbox" value="11AS"><span>11AS</span></label>
+                <label class="grade-chip"><input type="checkbox" value="12SAT"><span>12SAT</span></label>
+                <label class="grade-chip"><input type="checkbox" value="12A2"><span>12A2</span></label>
+                <label class="grade-chip"><input type="checkbox" value="Not sure yet"><span>Not sure yet</span></label>
+            </div>
+            <input type="hidden" name="grades" id="gradesHidden">
+            <span id="gradeError">Please select at least one grade.</span>
         </div>
 
         <button type="submit" id="submitBtn">Submit Response</button>
@@ -394,25 +492,101 @@
     const formView = document.getElementById('formView');
     const successView = document.getElementById('successView');
     const resetBtn = document.getElementById('resetBtn');
+    const gradeCheckboxes = document.querySelectorAll('.grade-chip input');
+    const gradesHidden = document.getElementById('gradesHidden');
+    const gradeGrid = document.getElementById('gradeGrid');
+    const gradeError = document.getElementById('gradeError');
 
-    const tickSVG = '<svg class="tick" viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 6"/></svg>';
+    const enumberInput = document.getElementById('enumber');
+    const fullNameInput = document.getElementById('fullName');
+    const emailInput = document.getElementById('email');
+    const whatsappInput = document.getElementById('whatsapp');
+
+    const enumberError = document.getElementById('enumberError');
+    const fullNameError = document.getElementById('fullNameError');
+    const emailError = document.getElementById('emailError');
+    const whatsappError = document.getElementById('whatsappError');
+
+    function showFieldError(input, errorEl) {
+        input.classList.add('invalid');
+        errorEl.style.display = 'block';
+    }
+
+    function clearFieldError(input, errorEl) {
+        input.classList.remove('invalid');
+        errorEl.style.display = 'none';
+    }
+
+    function validateEnumber() {
+        const ok = /^[eE]\d+$/.test(enumberInput.value.trim());
+        ok ? clearFieldError(enumberInput, enumberError) : showFieldError(enumberInput, enumberError);
+        return ok;
+    }
+
+    function validateFullName() {
+        const val = fullNameInput.value.trim();
+        const words = val.split(/\s+/).filter(Boolean);
+        const ok = /^[A-Za-z\s]+$/.test(val) && words.length === 2;
+        ok ? clearFieldError(fullNameInput, fullNameError) : showFieldError(fullNameInput, fullNameError);
+        return ok;
+    }
+
+    function validateEmail() {
+        const ok = /^[a-zA-Z0-9._%+-]+@ais\.sch\.sa$/.test(emailInput.value.trim());
+        ok ? clearFieldError(emailInput, emailError) : showFieldError(emailInput, emailError);
+        return ok;
+    }
+
+    function validateWhatsapp() {
+        const val = whatsappInput.value.trim();
+        const ok = /^[0-9+\s]+$/.test(val) && val.length > 0;
+        ok ? clearFieldError(whatsappInput, whatsappError) : showFieldError(whatsappInput, whatsappError);
+        return ok;
+    }
+
+    function syncGrades() {
+        const selected = Array.from(gradeCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        gradesHidden.value = selected.join(', ');
+        validateGrades();
+    }
+
+    function validateGrades() {
+        const ok = gradesHidden.value.length > 0;
+        if (ok) {
+            gradeGrid.classList.remove('invalid');
+            gradeError.style.display = 'none';
+        } else {
+            gradeGrid.classList.add('invalid');
+            gradeError.style.display = 'inline-block';
+        }
+        return ok;
+    }
+
+    // Validate on blur for immediate feedback
+    enumberInput.addEventListener('blur', validateEnumber);
+    fullNameInput.addEventListener('blur', validateFullName);
+    emailInput.addEventListener('blur', validateEmail);
+    whatsappInput.addEventListener('blur', validateWhatsapp);
+    gradeCheckboxes.forEach(cb => cb.addEventListener('change', syncGrades));
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Native required + pattern validation for every field
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+        const validEnumber = validateEnumber();
+        const validName = validateFullName();
+        const validEmail = validateEmail();
+        const validWhatsapp = validateWhatsapp();
+        const validGrades = validateGrades();
 
-        // Custom two-word Full Name restriction
-        const nameInput = document.getElementById('fullName').value.trim();
-        const wordCount = nameInput.split(/\s+/);
-
-        if (wordCount.length !== 2) {
+        if (!(validEnumber && validName && validEmail && validWhatsapp && validGrades)) {
             statusMsg.className = 'status-error';
-            statusMsg.innerText = "Please enter exactly two words (First Name and Last Name).";
+            statusMsg.innerText = "Please correct the highlighted fields above.";
+            const firstInvalid = form.querySelector('.invalid') || (gradeGrid.classList.contains('invalid') ? gradeGrid : null);
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return;
         }
 
@@ -431,6 +605,13 @@
         .then(data => {
             if (data.result === "success") {
                 form.reset();
+                gradesHidden.value = '';
+                gradeGrid.classList.remove('invalid');
+                gradeError.style.display = 'none';
+                [enumberInput, fullNameInput, emailInput, whatsappInput].forEach((input, i) => {
+                    const errs = [enumberError, fullNameError, emailError, whatsappError];
+                    clearFieldError(input, errs[i]);
+                });
                 statusMsg.className = '';
                 statusMsg.innerText = '';
                 formView.style.display = 'none';
