@@ -468,6 +468,21 @@
             <span id="gradeError">Please select at least one grade.</span>
         </div>
 
+        <div class="input-group full">
+            <label>Have you returned to work? <span class="req">*</span></label>
+            <div class="grade-grid" id="workStatusGrid">
+                <label class="grade-chip"><input type="radio" name="workStatus" value="Yes" id="workStatusYes"><span>Yes</span></label>
+                <label class="grade-chip"><input type="radio" name="workStatus" value="No" id="workStatusNo"><span>No</span></label>
+            </div>
+            <span class="field-error" id="workStatusError">Please select whether you have returned to work.</span>
+        </div>
+
+        <div class="input-group full" id="resumptionDateGroup" style="display:none;">
+            <label for="resumptionDate">Date of Work Resumption <span class="req">*</span></label>
+            <input type="date" id="resumptionDate" name="resumptionDate">
+            <span class="field-error" id="resumptionDateError">Please select your date of work resumption.</span>
+        </div>
+
         <button type="submit" id="submitBtn">Submit Response</button>
       </div>
     </form>
@@ -506,6 +521,13 @@
     const fullNameError = document.getElementById('fullNameError');
     const emailError = document.getElementById('emailError');
     const whatsappError = document.getElementById('whatsappError');
+
+    const workStatusRadios = document.querySelectorAll('input[name="workStatus"]');
+    const workStatusNo = document.getElementById('workStatusNo');
+    const workStatusError = document.getElementById('workStatusError');
+    const resumptionDateGroup = document.getElementById('resumptionDateGroup');
+    const resumptionDateInput = document.getElementById('resumptionDate');
+    const resumptionDateError = document.getElementById('resumptionDateError');
 
     function showFieldError(input, errorEl) {
         input.classList.add('invalid');
@@ -564,12 +586,42 @@
         return ok;
     }
 
+    function toggleResumptionDate() {
+        const showDate = workStatusNo.checked;
+        resumptionDateGroup.style.display = showDate ? 'block' : 'none';
+        if (!showDate) {
+            resumptionDateInput.value = '';
+            clearFieldError(resumptionDateInput, resumptionDateError);
+        }
+    }
+
+    function validateWorkStatus() {
+        const ok = Array.from(workStatusRadios).some(r => r.checked);
+        workStatusError.style.display = ok ? 'none' : 'block';
+        return ok;
+    }
+
+    function validateResumptionDate() {
+        if (!workStatusNo.checked) {
+            clearFieldError(resumptionDateInput, resumptionDateError);
+            return true;
+        }
+        const ok = resumptionDateInput.value.trim().length > 0;
+        ok ? clearFieldError(resumptionDateInput, resumptionDateError) : showFieldError(resumptionDateInput, resumptionDateError);
+        return ok;
+    }
+
     // Validate on blur for immediate feedback
     enumberInput.addEventListener('blur', validateEnumber);
     fullNameInput.addEventListener('blur', validateFullName);
     emailInput.addEventListener('blur', validateEmail);
     whatsappInput.addEventListener('blur', validateWhatsapp);
     gradeCheckboxes.forEach(cb => cb.addEventListener('change', syncGrades));
+    workStatusRadios.forEach(r => r.addEventListener('change', function() {
+        toggleResumptionDate();
+        validateWorkStatus();
+    }));
+    resumptionDateInput.addEventListener('blur', validateResumptionDate);
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -579,8 +631,10 @@
         const validEmail = validateEmail();
         const validWhatsapp = validateWhatsapp();
         const validGrades = validateGrades();
+        const validWorkStatus = validateWorkStatus();
+        const validResumptionDate = validateResumptionDate();
 
-        if (!(validEnumber && validName && validEmail && validWhatsapp && validGrades)) {
+        if (!(validEnumber && validName && validEmail && validWhatsapp && validGrades && validWorkStatus && validResumptionDate)) {
             statusMsg.className = 'status-error';
             statusMsg.innerText = "Please correct the highlighted fields above.";
             const firstInvalid = form.querySelector('.invalid') || (gradeGrid.classList.contains('invalid') ? gradeGrid : null);
@@ -608,6 +662,9 @@
                 gradesHidden.value = '';
                 gradeGrid.classList.remove('invalid');
                 gradeError.style.display = 'none';
+                workStatusError.style.display = 'none';
+                resumptionDateGroup.style.display = 'none';
+                clearFieldError(resumptionDateInput, resumptionDateError);
                 [enumberInput, fullNameInput, emailInput, whatsappInput].forEach((input, i) => {
                     const errs = [enumberError, fullNameError, emailError, whatsappError];
                     clearFieldError(input, errs[i]);
