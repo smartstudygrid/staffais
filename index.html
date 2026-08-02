@@ -480,6 +480,95 @@
     color: var(--paper);
   }
 
+  .field-notice {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-top: 7px;
+    line-height: 1.4;
+  }
+
+  .field-notice::before {
+    content: "i";
+    flex-shrink: 0;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1.3px solid var(--gold);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 10px;
+    line-height: 11px;
+    text-align: center;
+  }
+
+  .duplicate-view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 38px 10px 8px;
+  }
+
+  .duplicate-view .dup-ring {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,145,47,0.14), transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .duplicate-view .dup-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .duplicate-view .dup-icon circle {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2;
+  }
+
+  .duplicate-view .dup-icon path,
+  .duplicate-view .dup-icon line {
+    stroke: var(--gold);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .duplicate-view h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+    margin: 0 0 8px 0;
+  }
+
+  .duplicate-view p {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 0 0 6px 0;
+    max-width: 420px;
+    line-height: 1.6;
+  }
+
+  .duplicate-view .dup-sub {
+    margin-bottom: 26px;
+  }
+
+  .duplicate-view .dup-record {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
   footer.foot-note {
     font-family: 'Inter', sans-serif;
     text-align: center;
@@ -533,6 +622,7 @@
             <span class="hint">Format: 'E' followed by numbers</span>
             <input type="text" id="enumber" name="enumber" placeholder="E20000">
             <span class="field-error" id="enumberError">Enter an Enumber starting with 'E' followed by numbers, e.g. E20000.</span>
+            <span class="field-notice" id="enumberNotice">A response is already on file for this Enumber.</span>
         </div>
 
         <div class="input-group">
@@ -613,6 +703,20 @@
       <p>Thank you — your response has been recorded.</p>
       <button type="button" class="reset-btn" id="resetBtn">Reset Form</button>
     </div>
+
+    <div class="duplicate-view" id="duplicateView">
+      <div class="dup-ring">
+        <svg class="dup-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9"></circle>
+          <line x1="12" y1="8" x2="12" y2="13"></line>
+          <circle cx="12" cy="16.3" r="1" fill="var(--gold)" stroke="none"></circle>
+        </svg>
+      </div>
+      <h2>You've Already Completed This Form</h2>
+      <p id="duplicateName">We already have a response on file for this Enumber.</p>
+      <p class="dup-sub">If you need to correct or update your details, please contact the English Department office directly rather than submitting a new response.</p>
+      <button type="button" class="reset-btn" id="duplicateBackBtn">Use a Different Enumber</button>
+    </div>
   </div>
 
   <footer class="foot-note">
@@ -628,6 +732,11 @@
     const formView = document.getElementById('formView');
     const successView = document.getElementById('successView');
     const resetBtn = document.getElementById('resetBtn');
+    const duplicateView = document.getElementById('duplicateView');
+    const duplicateName = document.getElementById('duplicateName');
+    const duplicateBackBtn = document.getElementById('duplicateBackBtn');
+    const enumberNotice = document.getElementById('enumberNotice');
+    let isDuplicateEnumber = false;
     const gradeCheckboxes = document.querySelectorAll('.grade-chip input[type="checkbox"]');
     const gradesHidden = document.getElementById('gradesHidden');
     const gradeGrid = document.getElementById('gradeGrid');
@@ -664,6 +773,36 @@
         const ok = /^[eE]\d+$/.test(enumberInput.value.trim());
         ok ? clearFieldError(enumberInput, enumberError) : showFieldError(enumberInput, enumberError);
         return ok;
+    }
+
+    function showDuplicateView(fullName) {
+        formView.style.display = 'none';
+        successView.style.display = 'none';
+        duplicateName.textContent = fullName
+            ? `We already have a response on file for ${enumberInput.value.trim().toUpperCase()}, recorded under the name ${fullName}.`
+            : `We already have a response on file for ${enumberInput.value.trim().toUpperCase()}.`;
+        duplicateView.style.display = 'flex';
+    }
+
+    async function checkEnumberDuplicate() {
+        const enumber = enumberInput.value.trim();
+        if (!enumber || !/^[eE]\d+$/.test(enumber)) {
+            isDuplicateEnumber = false;
+            enumberNotice.style.display = 'none';
+            return;
+        }
+        try {
+            const checkUrl = form.action + '?action=check&enumber=' + encodeURIComponent(enumber);
+            const res = await fetch(checkUrl);
+            const data = await res.json();
+            isDuplicateEnumber = !!data.exists;
+            enumberNotice.style.display = isDuplicateEnumber ? 'flex' : 'none';
+        } catch (err) {
+            // If the check itself fails, stay silent here — the server still
+            // guards against duplicates at submission time.
+            isDuplicateEnumber = false;
+            enumberNotice.style.display = 'none';
+        }
     }
 
     function validateFullName() {
@@ -733,7 +872,14 @@
     }
 
     // Validate on blur for immediate feedback
-    enumberInput.addEventListener('blur', validateEnumber);
+    enumberInput.addEventListener('blur', function() {
+        if (validateEnumber()) {
+            checkEnumberDuplicate();
+        } else {
+            isDuplicateEnumber = false;
+            enumberNotice.style.display = 'none';
+        }
+    });
     fullNameInput.addEventListener('blur', validateFullName);
     emailInput.addEventListener('blur', validateEmail);
     whatsappInput.addEventListener('blur', validateWhatsapp);
@@ -762,6 +908,11 @@
             if (firstInvalid) {
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            return;
+        }
+
+        if (isDuplicateEnumber) {
+            showDuplicateView();
             return;
         }
 
@@ -794,6 +945,10 @@
                 statusMsg.innerText = '';
                 formView.style.display = 'none';
                 successView.style.display = 'flex';
+            } else if (data.result === 'duplicate') {
+                statusMsg.className = '';
+                statusMsg.innerText = '';
+                showDuplicateView(data.fullName);
             } else {
                 throw new Error(data.error);
             }
@@ -811,6 +966,15 @@
     resetBtn.addEventListener('click', function() {
         successView.style.display = 'none';
         formView.style.display = 'block';
+    });
+
+    duplicateBackBtn.addEventListener('click', function() {
+        duplicateView.style.display = 'none';
+        formView.style.display = 'block';
+        isDuplicateEnumber = false;
+        enumberInput.value = '';
+        enumberNotice.style.display = 'none';
+        enumberInput.focus();
     });
 </script>
 
